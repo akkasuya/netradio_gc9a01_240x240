@@ -1,0 +1,6 @@
+.pio/
+.vscode/
+src/secrets.h
+
+# full-size originals (only docs/*.jpg are tracked)
+/*.jpg
