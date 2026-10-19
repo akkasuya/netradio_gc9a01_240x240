@@ -12,10 +12,10 @@ static const int W = OLED_W;
 static const int H = OLED_H;
 
 static const int Y_TIME    = 0;   // Font2 (16px), flush to the top
-static const int Y_STATION = 34;  // Font2, middle
-static const int Y_INFO    = 46;  // Font0, middle
-static const int Y_BARS    = 50;  // top of the visualizer area
-static const int H_BARS    = 14;
+static const int Y_STATION = 32;  // Font2 x2 (~32px), middle
+static const int Y_INFO    = 52;  // Font0, middle
+static const int Y_BARS    = 56;  // top of the visualizer area
+static const int H_BARS    = 8;
 
 static char timeText[8]     = "--:--";
 static char statusText[24]  = "";
@@ -30,6 +30,22 @@ static void drawTopCentered(const char* s, int y, const lgfx::IFont* font) {
     tft.setTextColor(TFT_WHITE, TFT_BLACK);
     tft.setTextDatum(top_center);
     tft.drawString(s, W / 2, y);
+}
+
+// Station name at 2x, shrunk down only if the name is too wide for 128 px.
+static void drawStation(const char* s, int y) {
+    tft.setFont(&fonts::Font2);
+    tft.setTextColor(TFT_WHITE, TFT_BLACK);
+    tft.setTextDatum(middle_center);
+
+    float scale = 2.0f;
+    tft.setTextSize(scale);
+    while (scale > 0.6f && tft.textWidth(s) > W - 2) {
+        scale -= 0.1f;
+        tft.setTextSize(scale);
+    }
+    tft.drawString(s, W / 2, y);
+    tft.setTextSize(1.0f);
 }
 
 static void drawCentered(const char* s, int y, const lgfx::IFont* font) {
@@ -116,7 +132,7 @@ void ui_render() {
     tft.fillScreen(TFT_BLACK);
 
     drawTopCentered(timeText, Y_TIME, &fonts::Font2);
-    drawCentered(stationText, Y_STATION, &fonts::Font2);
+    drawStation(stationText, Y_STATION);
     drawCentered(info, Y_INFO, &fonts::Font0);
 
     tft.setFont(&fonts::Font0);
