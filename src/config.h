@@ -1,13 +1,12 @@
 #pragma once
 #include "secrets.h"
 
-// ---- GC9A01 240x240 round display (from pin.txt) ----
-#define LCD_SCLK 13
-#define LCD_MOSI 12
-#define LCD_RST  11
-#define LCD_DC   10
-#define LCD_CS    9
-// BLK tied to 3.3V (always on)
+// ---- SSD1306 128x64 OLED (I2C) ----
+#define OLED_SDA  12
+#define OLED_SCL  13
+#define OLED_ADDR 0x3C
+#define OLED_W    128
+#define OLED_H     64
 
 // ---- MAX98357 I2S amplifier (from pin.txt) ----
 #define I2S_LRC   1
@@ -21,13 +20,10 @@
 // ---- mDNS ----
 #define MDNS_HOST "netradio"   // reachable as netradio.local
 
-// ---- Display timing / thermal stability ----
-// GC9A01 panels on long jumper wires lose sync when hot at high SPI clocks.
-// Lower these if the screen starts showing dots or tearing after a long run.
-#define LCD_SPI_WRITE_HZ   10000000
-#define LCD_SPI_READ_HZ     8000000
-#define UI_FRAME_MS             200   // full-screen refresh interval
-#define DISPLAY_REINIT_MS    600000UL // re-init panel every 10 min (0 = never)
+// ---- Display refresh ----
+#define OLED_I2C_SCAN             1   // scan the I2C bus at boot and log devices
+#define UI_FRAME_MS             120   // OLED is 1-bit, redraw is cheap
+#define DISPLAY_REINIT_MS         0UL // re-init panel every N ms (0 = never)
 
 // ---- Audio ----
 #define VOL_MAX     21

@@ -1,26 +1,34 @@
-# NetRadio (ESP32-S3 + GC9A01 + MAX98357)
+# NetRadio (ESP32-S3 + SSD1306 + MAX98357)
 
-Internet radio on an ESP32-S3 with a 240x240 round GC9A01 display and a MAX98357 I2S amplifier.
+Internet radio on an ESP32-S3 with a 128x64 I2C SSD1306 OLED and a MAX98357 I2S amplifier.
 
-Shows time, WiFi status and IP address, station name, volume level, playback state, and a circular spectrum visualizer.
+Shows time, station name, playback state, IP address / mDNS name, volume, and a 16-band spectrum visualizer.
 
-![NetRadio running](docs/demo-2.jpg)
+> Branch `oled-ssd1306`: this variant uses an SSD1306 OLED instead of the 240x240 GC9A01 round display. See `main` for the GC9A01 build.
 
 ## Hardware
 
 | Part | Pin |
 | --- | --- |
-| GC9A01 SCL | GPIO13 |
-| GC9A01 SDA | GPIO12 |
-| GC9A01 RES | GPIO11 |
-| GC9A01 DC | GPIO10 |
-| GC9A01 CS | GPIO9 |
-| GC9A01 BLK | 3.3V |
+| SSD1306 SDA | GPIO12 |
+| SSD1306 SCL | GPIO13 |
+| SSD1306 VCC | 3.3V |
+| SSD1306 GND | GND |
 | MAX98357 LRC | GPIO1 |
 | MAX98357 BCLK | GPIO2 |
 | MAX98357 DIN | GPIO3 |
 
-Full pin reference: `pin.txt`. Pin constants: `src/config.h`.
+I2C address: `0x3C` (change `OLED_ADDR` in `src/config.h` if your module uses `0x3D`).
+Display setup: `src/lgfx_config.h`.
+
+## Screen layout
+
+| Row | Content |
+| --- | --- |
+| top | time (large), volume `Vnn` at the top right |
+| middle | station name |
+| below | IP address / `netradio.local` (alternating), or the playback state when not playing |
+| bottom | 16-band spectrum visualizer |
 
 ## Setup
 
@@ -31,6 +39,8 @@ Full pin reference: `pin.txt`. Pin constants: `src/config.h`.
 pio run -t upload
 pio device monitor
 ```
+
+The boot log prints an I2C scan and the detected OLED address.
 
 ## Web interface
 
@@ -59,26 +69,16 @@ API:
 
 - Stations: `STATIONS[]` in `src/config.h`
 - Timezone: `TZ_INFO` in `src/config.h` (default `ICT-7`)
-- mDNS host name: `MDNS_HOST` in `src/config.h` (default `netradio`, shown on the display)
-- Display setup: `src/lgfx_config.h`
-- Text opacity: `TEXT_ALPHA` in `src/ui.cpp` (0–255)
-- Visualizer spin speed: `BAR_SPIN_DEG_PER_MS` in `src/ui.cpp`
+- mDNS host name: `MDNS_HOST` in `src/config.h` (default `netradio`)
+- OLED address / pins: `OLED_ADDR`, `OLED_SDA`, `OLED_SCL` in `src/config.h`
+- Screen rotation: `tft.setRotation(2)` in `src/ui.cpp`
+- Refresh interval: `UI_FRAME_MS` in `src/config.h`
+- I2C scan at boot: `OLED_I2C_SCAN` in `src/config.h`
 
 ## Notes
 
 - PSRAM must be enabled (the audio library allocates its stream buffer there):
   `board_build.arduino.memory_type = qio_qspi` and `board_build.psram_type = qspi` in `platformio.ini`.
-- Only ASCII text is rendered; the display fonts have no Thai glyphs.
+- Only ASCII text is rendered.
 - Station URLs go stale over time. If a station stays in `BUFFERING` or `STREAM ERROR`, replace its URL in `src/config.h`.
-
-## Display stability (heat)
-
-GC9A01 modules can lose sync when they get hot, showing dot noise, torn rows or a collapsed image. The firmware mitigates this in `src/config.h`:
-
-| Setting | Default | Effect |
-| --- | --- | --- |
-| `LCD_SPI_WRITE_HZ` | 10 MHz | lower = more stable, slower redraw |
-| `UI_FRAME_MS` | 200 ms | longer interval = less SPI traffic and less heat |
-| `DISPLAY_REINIT_MS` | 600000 (10 min) | full panel re-init to recover a desynced display; `0` disables |
-
-If the problem persists, try `LCD_SPI_WRITE_HZ` 8000000 and `UI_FRAME_MS` 300, and check supply voltage and grounding (a 100 µF capacitor across the display's 3.3 V/GND helps).
+- `tools/lcdtest` is the GC9A01 diagnostic sketch from `main`; it does not apply to this branch.
