@@ -11,7 +11,7 @@ static LGFX tft;
 static const int W = OLED_W;
 static const int H = OLED_H;
 
-static const int Y_TIME    = 13;  // Font4, middle
+static const int Y_TIME    = 0;   // Font2 (16px), flush to the top
 static const int Y_STATION = 34;  // Font2, middle
 static const int Y_INFO    = 46;  // Font0, middle
 static const int Y_BARS    = 50;  // top of the visualizer area
@@ -24,6 +24,13 @@ static char stateText[24]   = "";
 static int volNow = 0;
 static int volMax = 1;
 static float bars[SPEC_BANDS] = {0};
+
+static void drawTopCentered(const char* s, int y, const lgfx::IFont* font) {
+    tft.setFont(font);
+    tft.setTextColor(TFT_WHITE, TFT_BLACK);
+    tft.setTextDatum(top_center);
+    tft.drawString(s, W / 2, y);
+}
 
 static void drawCentered(const char* s, int y, const lgfx::IFont* font) {
     tft.setFont(font);
@@ -108,7 +115,7 @@ void ui_render() {
     tft.startWrite();
     tft.fillScreen(TFT_BLACK);
 
-    drawCentered(timeText, Y_TIME, &fonts::Font4);
+    drawTopCentered(timeText, Y_TIME, &fonts::Font2);
     drawCentered(stationText, Y_STATION, &fonts::Font2);
     drawCentered(info, Y_INFO, &fonts::Font0);
 
