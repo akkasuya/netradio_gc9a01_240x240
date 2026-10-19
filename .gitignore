@@ -4,3 +4,6 @@ src/secrets.h
 
 # full-size originals (only docs/*.jpg are tracked)
 /*.jpg
+
+# diagnostic tool build output
+tools/*/.pio/
