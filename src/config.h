@@ -18,6 +18,9 @@
 #define NTP_SERVER "pool.ntp.org"
 #define TZ_INFO    "ICT-7"
 
+// ---- mDNS ----
+#define MDNS_HOST "netradio"   // reachable as netradio.local
+
 // ---- Audio ----
 #define VOL_MAX     21
 #define VOL_DEFAULT 12

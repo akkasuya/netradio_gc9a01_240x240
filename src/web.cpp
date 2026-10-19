@@ -20,6 +20,9 @@ h1{font-size:22px;margin:8px 0 12px}
 .muted{color:#888;font-size:13px}
 button{display:block;background:#2c2c2c;color:#eee;border:0;border-radius:8px;padding:10px 12px;margin:6px 0;width:100%;text-align:left;font-size:15px;cursor:pointer}
 button.on{background:#ffd54f;color:#111}
+.row{display:flex;gap:8px;margin:6px 0}
+.row button{flex:1;text-align:center;margin:0}
+.row button.active{background:#ffd54f;color:#111}
 input[type=range]{width:100%}
 </style></head><body>
 <h1>NetRadio</h1>
@@ -28,6 +31,13 @@ input[type=range]{width:100%}
   <div class="big" id="st">-</div>
   <div class="muted" id="state">-</div>
   <div class="muted" id="time"></div>
+</div>
+<div class="card">
+  <div class="row">
+    <button id="bplay" onclick="post('/api/play')">&#9654; Play</button>
+    <button id="bpause" onclick="post('/api/pause')">&#10074;&#10074; Pause</button>
+    <button id="bstop" onclick="post('/api/stop')">&#9632; Stop</button>
+  </div>
 </div>
 <div class="card">
   <div>Volume <span id="vol">-</span></div>
@@ -58,6 +68,9 @@ async function refresh() {
   document.getElementById('time').textContent = s.time;
   document.getElementById('vol').textContent = s.volume + '/' + s.max;
   if (!dragging) document.getElementById('v').value = s.volume;
+  document.getElementById('bplay').classList.toggle('active', s.state === 'PLAYING' || s.state === 'BUFFERING');
+  document.getElementById('bpause').classList.toggle('active', s.state === 'PAUSED');
+  document.getElementById('bstop').classList.toggle('active', s.state === 'STOPPED');
   stations.forEach((_, i) => {
     document.getElementById('s' + i).classList.toggle('on', i === s.index);
   });
@@ -143,6 +156,21 @@ static void handleVolume() {
     server.send(200, "text/plain", "ok");
 }
 
+static void handlePlay() {
+    radioPlay();
+    server.send(200, "text/plain", "ok");
+}
+
+static void handlePause() {
+    radioPause();
+    server.send(200, "text/plain", "ok");
+}
+
+static void handleStop() {
+    radioStop();
+    server.send(200, "text/plain", "ok");
+}
+
 void web_begin() {
     if (started) return;
     server.on("/", HTTP_GET, handleRoot);
@@ -150,6 +178,9 @@ void web_begin() {
     server.on("/api/status", HTTP_GET, handleStatus);
     server.on("/api/station", HTTP_POST, handleStation);
     server.on("/api/volume", HTTP_POST, handleVolume);
+    server.on("/api/play", HTTP_POST, handlePlay);
+    server.on("/api/pause", HTTP_POST, handlePause);
+    server.on("/api/stop", HTTP_POST, handleStop);
     server.begin();
     started = true;
     Serial.printf("[WEB] http://%s/\n", WiFi.localIP().toString().c_str());

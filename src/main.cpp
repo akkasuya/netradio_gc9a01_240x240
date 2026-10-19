@@ -7,6 +7,7 @@
 
 #include <Arduino.h>
 #include <WiFi.h>
+#include <ESPmDNS.h>
 #include <time.h>
 #include <esp_sntp.h>
 #include "Audio.h"
@@ -16,13 +17,14 @@
 #include "ui.h"
 #include "web.h"
 
-enum PlayState { ST_IDLE, ST_BUFFERING, ST_PLAYING, ST_ERROR };
+enum PlayState { ST_IDLE, ST_BUFFERING, ST_PLAYING, ST_PAUSED, ST_STOPPED, ST_ERROR };
 
 Audio audio;
 static int stationIdx = 0;
 static int volume = VOL_DEFAULT;
 static PlayState pstate = ST_IDLE;
 static bool netReady = false;
+static bool userStopped = false;   // stopped on purpose: no auto-retry
 static uint32_t lastWifiAttempt = 0;
 static uint32_t lastRetry = 0;
 
@@ -30,6 +32,7 @@ static const char* stateText(PlayState s) {
     switch (s) {
         case ST_BUFFERING: return "BUFFERING";
         case ST_PLAYING:   return "PLAYING";
+        case ST_PAUSED:    return "PAUSED";
         case ST_ERROR:     return "STREAM ERROR";
         default:           return "STOPPED";
     }
@@ -37,6 +40,7 @@ static const char* stateText(PlayState s) {
 
 static void startStation() {
     audio.stopSong();
+    userStopped = false;
     pstate = ST_BUFFERING;
     ui_station(STATIONS[stationIdx].name);
     ui_state(stateText(pstate));
@@ -69,6 +73,34 @@ void radioSetVolume(int vol) {
 }
 
 const char* radioStateText() { return stateText(pstate); }
+
+void radioPlay() {
+    if (pstate == ST_PAUSED) {
+        audio.pauseResume();
+        pstate = ST_PLAYING;
+    } else if (pstate != ST_PLAYING && pstate != ST_BUFFERING) {
+        startStation();
+    }
+    ui_state(stateText(pstate));
+}
+
+void radioPause() {
+    if (pstate == ST_PLAYING) {
+        audio.pauseResume();
+        pstate = ST_PAUSED;
+    } else if (pstate == ST_PAUSED) {
+        audio.pauseResume();
+        pstate = ST_PLAYING;
+    }
+    ui_state(stateText(pstate));
+}
+
+void radioStop() {
+    audio.stopSong();
+    userStopped = true;
+    pstate = ST_STOPPED;
+    ui_state(stateText(pstate));
+}
 
 static void wifiBegin() {
     lastWifiAttempt = millis();
@@ -107,6 +139,12 @@ void loop() {
             for (int i = 0; i < 20 && !getLocalTime(&t, 500); i++) {}
             esp_sntp_stop();
             web_begin();
+            if (MDNS.begin(MDNS_HOST)) {
+                MDNS.addService("http", "tcp", 80);
+                Serial.printf("[MDNS] http://%s.local/\n", MDNS_HOST);
+            } else {
+                Serial.println("[MDNS] Failed to start");
+            }
             startStation();
         }
     } else {
@@ -129,7 +167,7 @@ void loop() {
         pstate = ST_ERROR;
         ui_state(stateText(pstate));
     }
-    if (pstate == ST_ERROR && netReady && millis() - lastRetry > 5000) {
+    if (pstate == ST_ERROR && netReady && !userStopped && millis() - lastRetry > 5000) {
         lastRetry = millis();
         Serial.println("[RADIO] Retrying stream");
         startStation();

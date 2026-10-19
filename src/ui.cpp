@@ -19,7 +19,7 @@ static const Box TEXT_BOXES[] = {
     {40, 8, 160, 66},    // time
     {36, 66, 168, 22},   // status
     {22, 86, 196, 34},   // station
-    {70, 170, 100, 20},  // volume
+    {56, 170, 128, 20},  // mDNS host name
     {56, 188, 128, 20},  // state
 };
 
@@ -187,9 +187,7 @@ void ui_render() {
     drawCentered(statusText, Y_STATUS, &fonts::Font2, TFT_CYAN);
     drawCentered(stationText, Y_STATION, &fonts::Font4, TFT_YELLOW);
 
-    char buf[16];
-    snprintf(buf, sizeof(buf), "VOL %d/%d", volNow, volMax);
-    drawCentered(buf, Y_VOLTXT, &fonts::Font2, TFT_WHITE);
+    drawCentered(MDNS_HOST ".local", Y_VOLTXT, &fonts::Font2, TFT_WHITE);
     drawCentered(stateText, Y_STATE, &fonts::Font2, TFT_ORANGE);
 
     blendText();

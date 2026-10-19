@@ -34,8 +34,11 @@ pio device monitor
 
 ## Web interface
 
-The device serves a control page on port 80 (open `http://<device-ip>/`, the IP is shown on the display):
+The device is reachable at `http://<device-ip>/` (shown on the display) or `http://netradio.local/` via mDNS.
 
+Controls:
+
+- play / pause / stop
 - pick a station from the list
 - adjust the volume (0–21)
 
@@ -48,11 +51,15 @@ API:
 | `/api/status` | GET | IP, station, volume, state, time |
 | `/api/station?i=N` | POST | select station `N` |
 | `/api/volume?v=N` | POST | set volume (0–21) |
+| `/api/play` | POST | resume (restarts the stream if stopped) |
+| `/api/pause` | POST | pause / resume toggle |
+| `/api/stop` | POST | stop playback (no auto-retry) |
 
 ## Configuration
 
 - Stations: `STATIONS[]` in `src/config.h`
 - Timezone: `TZ_INFO` in `src/config.h` (default `ICT-7`)
+- mDNS host name: `MDNS_HOST` in `src/config.h` (default `netradio`, shown on the display)
 - Display setup: `src/lgfx_config.h`
 - Text opacity: `TEXT_ALPHA` in `src/ui.cpp` (0–255)
 - Visualizer spin speed: `BAR_SPIN_DEG_PER_MS` in `src/ui.cpp`
