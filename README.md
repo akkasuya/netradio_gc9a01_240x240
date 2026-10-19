@@ -6,6 +6,8 @@ Shows time, WiFi status and IP address, station name, volume level, playback sta
 
 ![NetRadio running](docs/demo-2.jpg)
 
+> Also available: branch [`oled-ssd1306`](https://github.com/akkasuya/netradio_gc9a01_240x240/tree/oled-ssd1306) runs the same firmware on a 128x64 I2C SSD1306 OLED (SDA 12 / SCL 13) instead of the round GC9A01.
+
 ## Hardware
 
 | Part | Pin |
