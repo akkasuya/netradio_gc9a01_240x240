@@ -173,6 +173,15 @@ void loop() {
         startStation();
     }
 
+    // ----- Display recovery -----
+    // A hot panel can lose sync and show dot noise. A full re-init brings it back.
+    static uint32_t lastReinit = 0;
+    if (DISPLAY_REINIT_MS && millis() - lastReinit > DISPLAY_REINIT_MS) {
+        lastReinit = millis();
+        Serial.println("[LCD] periodic re-init");
+        ui_reinit();
+    }
+
     // ----- Clock -----
     static uint32_t lastClock = 0;
     if (millis() - lastClock > 500) {
@@ -190,7 +199,7 @@ void loop() {
     // ----- Visualizer -----
     static uint32_t lastViz = 0;
     static float disp[SPEC_BANDS] = {0};
-    if (millis() - lastViz > 100) {
+    if (millis() - lastViz > UI_FRAME_MS) {
         lastViz = millis();
         float target[SPEC_BANDS] = {0};
         bool fresh = (pstate == ST_PLAYING) && spectrum_levels(target, audio.getSampleRate());

@@ -12,8 +12,8 @@ public:
             auto cfg = _bus_instance.config();
             cfg.spi_host = SPI2_HOST;
             cfg.spi_mode = 0;
-            cfg.freq_write = 15000000;
-            cfg.freq_read = 10000000;
+            cfg.freq_write = LCD_SPI_WRITE_HZ;
+            cfg.freq_read = LCD_SPI_READ_HZ;
             cfg.spi_3wire = false;
             cfg.use_lock = true;
             cfg.dma_channel = SPI_DMA_CH_AUTO;

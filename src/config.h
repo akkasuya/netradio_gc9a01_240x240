@@ -21,6 +21,14 @@
 // ---- mDNS ----
 #define MDNS_HOST "netradio"   // reachable as netradio.local
 
+// ---- Display timing / thermal stability ----
+// GC9A01 panels on long jumper wires lose sync when hot at high SPI clocks.
+// Lower these if the screen starts showing dots or tearing after a long run.
+#define LCD_SPI_WRITE_HZ   10000000
+#define LCD_SPI_READ_HZ     8000000
+#define UI_FRAME_MS             200   // full-screen refresh interval
+#define DISPLAY_REINIT_MS    600000UL // re-init panel every 10 min (0 = never)
+
 // ---- Audio ----
 #define VOL_MAX     21
 #define VOL_DEFAULT 12

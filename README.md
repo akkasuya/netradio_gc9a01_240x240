@@ -70,3 +70,15 @@ API:
   `board_build.arduino.memory_type = qio_qspi` and `board_build.psram_type = qspi` in `platformio.ini`.
 - Only ASCII text is rendered; the display fonts have no Thai glyphs.
 - Station URLs go stale over time. If a station stays in `BUFFERING` or `STREAM ERROR`, replace its URL in `src/config.h`.
+
+## Display stability (heat)
+
+GC9A01 modules can lose sync when they get hot, showing dot noise, torn rows or a collapsed image. The firmware mitigates this in `src/config.h`:
+
+| Setting | Default | Effect |
+| --- | --- | --- |
+| `LCD_SPI_WRITE_HZ` | 10 MHz | lower = more stable, slower redraw |
+| `UI_FRAME_MS` | 200 ms | longer interval = less SPI traffic and less heat |
+| `DISPLAY_REINIT_MS` | 600000 (10 min) | full panel re-init to recover a desynced display; `0` disables |
+
+If the problem persists, try `LCD_SPI_WRITE_HZ` 8000000 and `UI_FRAME_MS` 300, and check supply voltage and grounding (a 100 µF capacitor across the display's 3.3 V/GND helps).

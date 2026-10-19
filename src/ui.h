@@ -9,3 +9,4 @@ void ui_bars(const float* levels);
 void ui_volume(int vol, int maxVol);
 void ui_state(const char* text);
 void ui_render();
+void ui_reinit();

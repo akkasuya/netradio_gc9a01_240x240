@@ -158,6 +158,13 @@ void ui_state(const char* text) {
     strncpy(stateText, text, sizeof(stateText) - 1);
 }
 
+void ui_reinit() {
+    tft.init();
+    tft.setRotation(0);
+    canvas.fillScreen(TFT_BLACK);
+    canvas.pushSprite(0, 0);
+}
+
 void ui_render() {
     static uint32_t lastSpin = millis();
     uint32_t now = millis();
